@@ -3,17 +3,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/FirstFragment">
+    app:startDestination="@id/DoclistFragment">
 
     <fragment
-        android:id="@+id/FirstFragment"
-        android:name="com.codeka.picscan.DoclistFragment"
-        android:label="@string/first_fragment_label"
+        android:id="@+id/DoclistFragment"
+        android:name="com.codeka.picscan.ui.DoclistFragment"
+        android:label="@string/doclist_fragment_label"
         tools:layout="@layout/fragment_doclist">
 
         <action
             android:id="@+id/action_FirstFragment_to_SecondFragment"
             app:destination="@id/SecondFragment" />
+        <action
+            android:id="@+id/action_DoclistFragment_to_cameraFragment"
+            app:destination="@id/CameraFragment" />
     </fragment>
     <fragment
         android:id="@+id/SecondFragment"
@@ -23,6 +26,11 @@
 
         <action
             android:id="@+id/action_SecondFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
+            app:destination="@id/DoclistFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/CameraFragment"
+        android:name="com.codeka.picscan.ui.CameraFragment"
+        android:label="fragment_camera"
+        tools:layout="@layout/fragment_camera" />
 </navigation>
