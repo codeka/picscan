@@ -1,16 +1,14 @@
-package com.codeka.picscan.ui
+package com.codeka.picscan.ui.viewmodel
 
-import android.app.Application
 import android.net.Uri
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.codeka.picscan.App
-import com.codeka.picscan.model.Page
-import com.codeka.picscan.model.Project
-import com.codeka.picscan.model.ProjectRepository
-import com.codeka.picscan.model.ProjectWithPages
+import com.codeka.picscan.model.*
 import kotlinx.coroutines.launch
+import org.opencv.core.Mat
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.chrono.Chronology
@@ -59,16 +57,36 @@ class ProjectViewModel : ViewModel() {
     // TODO
   }
 
-  fun addPhoto(uri: Uri) {
+  fun getPageViewModel(pageId: Long): PageViewModel? {
+    for (p in project.value!!.pages) {
+      if (p.id == pageId) {
+        return PageViewModel(p)
+      }
+    }
+
+    return null
+  }
+
+  fun addPhoto(uri: Uri): LiveData<Long> {
+    val id = MutableLiveData<Long>()
     viewModelScope.launch {
       val proj = project.value!!
-      val page = Page(id = 0, projectId = proj.project.id, photoUri = uri.toString())
+      val page = Page(
+        id = 0, projectId = proj.project.id, photoUri = uri.toString(), corners = PageCorners())
 
       val pages = ArrayList(proj.pages)
       pages.add(page)
       proj.pages = pages
 
+      repo.save(proj)
       project.value = proj
+      id.value = page.id
     }
+
+    return id
+  }
+
+  fun thing() {
+    Mat()
   }
 }

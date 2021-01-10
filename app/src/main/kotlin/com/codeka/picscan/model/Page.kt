@@ -1,5 +1,6 @@
 package com.codeka.picscan.model
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -15,5 +16,8 @@ data class Page (
   val projectId: Long,
 
   /** The URI of the original photo that was taken for this page. */
-  val photoUri: String
+  val photoUri: String,
+
+  @Embedded
+  val corners: PageCorners
 )

@@ -14,9 +14,11 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.codeka.picscan.R
 import com.codeka.picscan.databinding.FragmentCameraBinding
+import com.codeka.picscan.ui.viewmodel.ProjectViewModel
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -100,10 +102,9 @@ class CameraFragment : Fragment() {
           val savedUri = Uri.fromFile(photoFile)
 
           val vm: ProjectViewModel by navGraphViewModels(R.id.nav_graph)
-          val numExistingPhotos = vm.project.value!!.pages.size
-          vm.addPhoto(savedUri)
-
-          // TODO: navigate to the next page...
+          vm.addPhoto(savedUri).observe(viewLifecycleOwner) {
+            findNavController().navigate(CameraFragmentDirections.toPageDetectFragment(it))
+          }
         }
       })
   }

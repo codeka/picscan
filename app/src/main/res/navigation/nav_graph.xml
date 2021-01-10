@@ -31,6 +31,17 @@
     <fragment
         android:id="@+id/CameraFragment"
         android:name="com.codeka.picscan.ui.CameraFragment"
-        android:label="fragment_camera"
-        tools:layout="@layout/fragment_camera" />
+        android:label="@string/fragment_camera"
+        tools:layout="@layout/fragment_camera" >
+        <action
+            android:id="@+id/toPageDetectFragment"
+            app:destination="@id/pageDetectFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/pageDetectFragment"
+        android:name="com.codeka.picscan.ui.PageDetectFragment"
+        android:label="@string/fragment_page_detect"
+        tools:layout="@layout/fragment_page_detect">
+        <argument android:name="pageId" app:argType="long" />
+    </fragment>
 </navigation>

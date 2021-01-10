@@ -4,11 +4,13 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 
 @Database(
   entities = [Project::class, Page::class],
-  version = 1,
+  version = 2,
   exportSchema = false)
+@TypeConverters(Converters::class)
 abstract class Store : RoomDatabase() {
 
   abstract fun projects(): ProjectDao
@@ -20,7 +22,10 @@ abstract class Store : RoomDatabase() {
     fun get(context: Context): Store {
       return i ?: synchronized(this) {
         val instance =
-          Room.databaseBuilder(context.applicationContext, Store::class.java, "store").build()
+          Room.databaseBuilder(context.applicationContext, Store::class.java, "store")
+            // TODO: only ignore migrations while testing...
+            .fallbackToDestructiveMigration()
+            .build()
         i = instance
         instance
       }

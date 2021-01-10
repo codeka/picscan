@@ -1,6 +1,7 @@
 package com.codeka.picscan
 
 import android.app.Application
+import org.opencv.android.OpenCVLoader
 
 class MyApp : Application() {
 
@@ -11,7 +12,7 @@ class MyApp : Application() {
   override fun onCreate() {
     super.onCreate()
 
-    // TODO??
+    OpenCVLoader.initDebug()
   }
 }
 

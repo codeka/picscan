@@ -8,15 +8,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.codeka.picscan.R
 import com.codeka.picscan.databinding.FragmentDoclistBinding
-import com.codeka.picscan.model.ProjectRepository
-import com.codeka.picscan.model.Store
-import com.google.android.material.snackbar.Snackbar
+import com.codeka.picscan.ui.viewmodel.ProjectViewModel
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
