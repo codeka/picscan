@@ -20,7 +20,37 @@
       android:layout_height="0dp"
       app:layout_constraintTop_toTopOf="parent"
       app:layout_constraintBottom_toTopOf="@+id/bottom_buttons"
-      app:bitmap="@{page.transformedBmp}" />
+      app:bitmap="@{page.filteredBmp}" />
+
+    <View
+      android:id="@+id/filter_selector"
+      android:layout_width="match_parent"
+      android:layout_height="64dp"
+      app:layout_constraintBottom_toTopOf="@id/bottom_buttons"
+      android:background="@color/secondaryLightColor" />
+
+    <!-- TODO: make these little previews or something... -->
+    <ImageButton
+        android:id="@+id/filter_none"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        app:layout_constraintTop_toTopOf="@+id/filter_selector"
+        app:layout_constraintBottom_toBottomOf="@+id/filter_selector"
+        app:layout_constraintStart_toStartOf="@id/filter_selector"
+        android:layout_marginStart="8dp"
+        android:backgroundTint="@color/secondaryColor"
+        android:src="@drawable/ic_filter_none" />
+
+    <ImageButton
+        android:id="@+id/filter_test"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        app:layout_constraintTop_toTopOf="@+id/filter_selector"
+        app:layout_constraintBottom_toBottomOf="@+id/filter_selector"
+        app:layout_constraintStart_toEndOf="@id/filter_none"
+        android:layout_marginStart="8dp"
+        android:backgroundTint="@color/secondaryColor"
+        android:src="@drawable/ic_filter_1" />
 
     <View
         android:id="@+id/bottom_buttons"

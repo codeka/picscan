@@ -24,6 +24,7 @@ import kotlin.collections.ArrayList
 import kotlin.math.pow
 import kotlin.math.sqrt
 
+
 class PageViewModel : ViewModel() {
   var page: Page? = null
 
@@ -32,6 +33,10 @@ class PageViewModel : ViewModel() {
 
   // The bitmap after it's been transformed so the corner are the actual corners.
   val transformedBmp: MutableLiveData<Bitmap> = MutableLiveData()
+
+  // The bitmap after it's been transformed and had color filters applied.
+  var filterType: MutableLiveData<ImageFilterType> = MutableLiveData(ImageFilterType.None)
+  val filteredBmp: MutableLiveData<Bitmap> = MutableLiveData()
 
   // TODO: disable for prod?
   private val enableDebug = true
@@ -62,9 +67,9 @@ class PageViewModel : ViewModel() {
         bitmapToMat(bmp.value!!, origMat)
 
         val edges = Mat()
-        Imgproc.cvtColor(origMat, edges, Imgproc.COLOR_BGR2GRAY);
-        Imgproc.GaussianBlur(edges, edges, Size(11.0, 11.0), 0.0);
-        Imgproc.Canny(edges, edges, 75.0, 200.0);
+        Imgproc.cvtColor(origMat, edges, Imgproc.COLOR_BGR2GRAY)
+        Imgproc.GaussianBlur(edges, edges, Size(11.0, 11.0), 0.0)
+        Imgproc.Canny(edges, edges, 75.0, 200.0)
         if (enableDebug) {
           val outBmp =
             Bitmap.createBitmap(bmp.value!!.width, bmp.value!!.height, Bitmap.Config.ARGB_8888)
@@ -146,10 +151,10 @@ class PageViewModel : ViewModel() {
           pageCorers.topRight.x.toDouble(), pageCorers.topRight.y.toDouble(),
           pageCorers.bottomRight.x.toDouble(), pageCorers.bottomRight.y.toDouble(),
           pageCorers.bottomLeft.x.toDouble(), pageCorers.bottomLeft.y.toDouble()
-        );
+        )
 
         val dstMat = Mat(4, 1, CvType.CV_32FC2)
-        dstMat.put(0, 0, 0.0, 0.0, width, 0.0, width, height, 0.0, height);
+        dstMat.put(0, 0, 0.0, 0.0, width, 0.0, width, height, 0.0, height)
 
         val transformMat = Imgproc.getPerspectiveTransform(srcMat, dstMat)
 
@@ -161,6 +166,41 @@ class PageViewModel : ViewModel() {
         matToBitmap(transformed, result)
         withContext(Dispatchers.Main) {
           transformedBmp.value = result
+          filteredBmp.value = result
+          filterType.value = ImageFilterType.None
+        }
+      }
+    }
+  }
+
+  fun filterImage(filter: ImageFilterType) {
+    viewModelScope.launch {
+      if (filter == ImageFilterType.None) {
+        filteredBmp.value = transformedBmp.value
+        filterType.value = filter
+      } else {
+        withContext(Dispatchers.Default) {
+          Log.i(TAG, "Transforming bitmap")
+
+          val srcBmp = transformedBmp.value!!
+          val width = srcBmp.width
+          val height = srcBmp.height
+
+          val src = Mat()
+          bitmapToMat(srcBmp, src)
+
+          // TODO: this is just a test filter...
+          Imgproc.cvtColor(src,src,Imgproc.COLOR_RGBA2GRAY);
+          Imgproc.adaptiveThreshold(
+            src, src, 255.0, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY, 15, 15.0);
+
+          val result = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+          matToBitmap(src, result)
+
+          withContext(Dispatchers.Main) {
+            filteredBmp.value = result
+            filterType.value = filter
+          }
         }
       }
     }

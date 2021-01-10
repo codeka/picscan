@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.navigation.navGraphViewModels
 import com.codeka.picscan.R
 import com.codeka.picscan.databinding.FragmentColorFilterBinding
+import com.codeka.picscan.ui.viewmodel.ImageFilterType
 import com.codeka.picscan.ui.viewmodel.PageViewModel
 import com.codeka.picscan.ui.viewmodel.ProjectViewModel
 
@@ -30,6 +31,13 @@ class ColorFilterFragment : Fragment() {
     binding.lifecycleOwner = viewLifecycleOwner
     binding.project = projectViewModel
     binding.page = pageViewModel
+
+    binding.filterNone.setOnClickListener {
+      pageViewModel.filterImage(ImageFilterType.None)
+    }
+    binding.filterTest.setOnClickListener {
+      pageViewModel.filterImage(ImageFilterType.Test)
+    }
 
     binding.finish.setOnClickListener {
       // TODO: handle finish button
