@@ -14,14 +14,14 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.navigation.navGraphViewModels
+import com.codeka.picscan.R
 import com.codeka.picscan.databinding.FragmentCameraBinding
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
-/**
- * [CameraFragment] lets you take a new picture to add to a document.
- */
+/** [CameraFragment] lets you take a new picture to add to a document. */
 class CameraFragment : Fragment() {
   private var _binding: FragmentCameraBinding? = null
   private val binding get() = _binding!!
@@ -86,20 +86,24 @@ class CameraFragment : Fragment() {
     // Create output options object which contains file + metadata
     val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
-    // Set up image capture listener, which is triggered after photo has
-    // been taken
+    // Set up image capture listener, which is triggered after photo has been taken
     imageCapture.takePicture(
       outputOptions, ContextCompat.getMainExecutor(requireContext()),
       object : ImageCapture.OnImageSavedCallback {
         override fun onError(exc: ImageCaptureException) {
-          Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
+          val msg = "Photo capture failed: ${exc.message}"
+          Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show()
+          Log.e(TAG, msg)
         }
 
         override fun onImageSaved(output: ImageCapture.OutputFileResults) {
           val savedUri = Uri.fromFile(photoFile)
-          val msg = "Photo capture succeeded: $savedUri"
-          Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show()
-          Log.d(TAG, msg)
+
+          val vm: ProjectViewModel by navGraphViewModels(R.id.nav_graph)
+          val numExistingPhotos = vm.project.value!!.pages.size
+          vm.addPhoto(savedUri)
+
+          // TODO: navigate to the next page...
         }
       })
   }

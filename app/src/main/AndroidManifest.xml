@@ -12,7 +12,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.PicScan">
+        android:theme="@style/Theme.PicScan"
+        android:name=".MyApp">
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"

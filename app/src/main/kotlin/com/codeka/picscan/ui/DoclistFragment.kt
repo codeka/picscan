@@ -11,8 +11,11 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.navGraphViewModels
 import com.codeka.picscan.R
 import com.codeka.picscan.databinding.FragmentDoclistBinding
+import com.codeka.picscan.model.ProjectRepository
+import com.codeka.picscan.model.Store
 import com.google.android.material.snackbar.Snackbar
 
 /**
@@ -41,7 +44,7 @@ class DoclistFragment : Fragment() {
       if (!cameraPermissionsGranted()) {
         requestPermissions(CAMERA_REQUIRED_PERMISSIONS, CAMERA_PERMISSIONS_REQUEST_CODE)
       } else {
-        startCamera()
+        createProject()
       }
     }
   }
@@ -55,7 +58,7 @@ class DoclistFragment : Fragment() {
 
     if (requestCode == CAMERA_PERMISSIONS_REQUEST_CODE) {
       if (cameraPermissionsGranted()) {
-        startCamera()
+        createProject()
       } else {
         Toast.makeText(
           requireContext(), "Permissions not granted by the user.", Toast.LENGTH_SHORT).show()
@@ -63,7 +66,10 @@ class DoclistFragment : Fragment() {
     }
   }
 
-  private fun startCamera() {
+  private fun createProject() {
+    val vm: ProjectViewModel by navGraphViewModels(R.id.nav_graph)
+    vm.create()
+
     findNavController().navigate(R.id.action_DoclistFragment_to_cameraFragment)
   }
 
