@@ -1,14 +1,14 @@
 package com.codeka.picscan.ui
 
 import android.os.Bundle
+import android.util.Log
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.navigation.navGraphViewModels
 import com.codeka.picscan.R
 import com.codeka.picscan.databinding.FragmentPageDetectBinding
 import com.codeka.picscan.model.Page
+import com.codeka.picscan.ui.viewmodel.PageViewModel
 import com.codeka.picscan.ui.viewmodel.ProjectViewModel
 
 /**
@@ -20,9 +20,11 @@ class PageDetectFragment : Fragment() {
   private lateinit var binding: FragmentPageDetectBinding
 
   private lateinit var args: PageDetectFragmentArgs
+  private var pageViewModel: PageViewModel? = null
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    setHasOptionsMenu(true)
     args = PageDetectFragmentArgs.fromBundle(requireArguments())
   }
 
@@ -33,11 +35,29 @@ class PageDetectFragment : Fragment() {
     binding = FragmentPageDetectBinding.inflate(inflater, container, false)
 
     val projectViewModel: ProjectViewModel by navGraphViewModels(R.id.nav_graph)
-    val pageViewModel = projectViewModel.getPageViewModel(args.pageId)
+    pageViewModel = projectViewModel.getPageViewModel(args.pageId)
 
     binding.lifecycleOwner = viewLifecycleOwner
     binding.project = projectViewModel
     binding.page = pageViewModel
     return binding.root
+  }
+
+  override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    inflater.inflate(R.menu.page_detect_menu, menu)
+  }
+
+  override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    return when (item.itemId) {
+      R.id.action_show_debug -> {
+        Log.i("DEANH", "here")
+        pageViewModel?.debugBmp?.observe(viewLifecycleOwner) {
+          Log.i("DEANH", "here again")
+          binding.image.setImageBitmap(it)
+        }
+        true
+      }
+      else -> super.onOptionsItemSelected(item)
+    }
   }
 }

@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.opencv.android.Utils.bitmapToMat
+import org.opencv.android.Utils.matToBitmap
 import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
 import java.util.*
@@ -26,23 +27,35 @@ class PageViewModel(val page: Page) : ViewModel() {
   val bmp: MutableLiveData<Bitmap> = MutableLiveData()
   val corners: MutableLiveData<PageCorners> = MutableLiveData()
 
+  // TODO: disable for prod?
+  private val enableDebug = true
+  val debugBmp: MutableLiveData<Bitmap> = MutableLiveData()
+
   /** Attempt to find the edges of the page for the current image. */
   fun findEdges() {
     viewModelScope.launch {
       withContext(Dispatchers.Default) {
-        Log.i("DEANH", "findEdges")
+        Log.i(TAG, "Finding edges of page")
 
         val origMat = Mat()
         bitmapToMat(bmp.value!!, origMat)
 
-        // Detect edges
         val edges = Mat()
         Imgproc.cvtColor(origMat, edges, Imgproc.COLOR_BGR2GRAY);
-        Imgproc.GaussianBlur(edges, edges, Size(5.0, 5.0), 0.0);
+        Imgproc.GaussianBlur(edges, edges, Size(11.0, 11.0), 0.0);
         Imgproc.Canny(edges, edges, 75.0, 200.0);
+        if (enableDebug) {
+          val outBmp =
+            Bitmap.createBitmap(bmp.value!!.width, bmp.value!!.height, Bitmap.Config.ARGB_8888)
+          matToBitmap(edges, outBmp)
+          withContext(Dispatchers.Main) {
+            debugBmp.value = outBmp
+          }
+        }
+
         val largestContour = findLargestContour(edges)
         if (largestContour != null) {
-          Log.i("DEANH", "largestContour is not null")
+          Log.i(TAG, "Found a contour, extracting points")
           val points = sortPoints(largestContour.toArray())
           val c = PageCorners()
           c.topLeft.x = points[0].x.toFloat()
@@ -54,15 +67,14 @@ class PageViewModel(val page: Page) : ViewModel() {
           c.bottomLeft.x = points[3].x.toFloat()
           c.bottomLeft.y = points[3].y.toFloat()
 
-          Log.i("DEANH", "points = ${c.topLeft.x},${c.topLeft.y} - ${c.topRight.x},${c.topRight.y} - ${c.bottomRight.x},${c.bottomRight.y} - ${c.bottomLeft.x},${c.bottomLeft.y}")
+          Log.i(TAG, "Edges = ${c.topLeft.x},${c.topLeft.y} - ${c.topRight.x},${c.topRight.y}" +
+              " - ${c.bottomRight.x},${c.bottomRight.y} - ${c.bottomLeft.x},${c.bottomLeft.y}")
 
           withContext(Dispatchers.Main) {
             corners.value = c
           }
 
           largestContour.release()
-        } else {
-          Log.i("DEANH", "largestContour IS null")
         }
         edges.release()
         origMat.release()
@@ -134,5 +146,9 @@ class PageViewModel(val page: Page) : ViewModel() {
 
   init {
     Picasso.get().load(page.photoUri).into(target)
+  }
+
+  companion object {
+    private const val TAG = "PageViewModel"
   }
 }
