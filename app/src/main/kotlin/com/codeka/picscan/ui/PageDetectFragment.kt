@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.codeka.picscan.R
 import com.codeka.picscan.databinding.FragmentPageDetectBinding
@@ -19,13 +20,9 @@ import com.codeka.picscan.ui.viewmodel.ProjectViewModel
 class PageDetectFragment : Fragment() {
   private lateinit var binding: FragmentPageDetectBinding
 
-  private lateinit var args: PageDetectFragmentArgs
-  private var pageViewModel: PageViewModel? = null
-
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setHasOptionsMenu(true)
-    args = PageDetectFragmentArgs.fromBundle(requireArguments())
   }
 
   override fun onCreateView(
@@ -35,11 +32,17 @@ class PageDetectFragment : Fragment() {
     binding = FragmentPageDetectBinding.inflate(inflater, container, false)
 
     val projectViewModel: ProjectViewModel by navGraphViewModels(R.id.nav_graph)
-    pageViewModel = projectViewModel.getPageViewModel(args.pageId)
+    val pageViewModel: PageViewModel by navGraphViewModels(R.id.nav_graph)
 
     binding.lifecycleOwner = viewLifecycleOwner
     binding.project = projectViewModel
     binding.page = pageViewModel
+
+    binding.next.setOnClickListener {
+      pageViewModel?.transformCorners()
+      findNavController().navigate(PageDetectFragmentDirections.toColorFilterFragment())
+    }
+
     return binding.root
   }
 
@@ -50,9 +53,8 @@ class PageDetectFragment : Fragment() {
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
     return when (item.itemId) {
       R.id.action_show_debug -> {
-        Log.i("DEANH", "here")
-        pageViewModel?.debugBmp?.observe(viewLifecycleOwner) {
-          Log.i("DEANH", "here again")
+        val pageViewModel: PageViewModel by navGraphViewModels(R.id.nav_graph)
+        pageViewModel.debugBmp.observe(viewLifecycleOwner) {
           binding.image.setImageBitmap(it)
         }
         true

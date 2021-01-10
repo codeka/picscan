@@ -9,16 +9,6 @@ import androidx.databinding.BindingAdapter
 import com.codeka.picscan.model.PageCorners
 import org.opencv.core.Point
 
-@BindingAdapter("app:bitmap")
-fun setBitmap(view: PageCornerEditorView, bmp: Bitmap?) {
-  view.setImageBitmap(bmp)
-}
-
-@BindingAdapter("app:corners")
-fun setCorners(view: PageCornerEditorView, corners: PageCorners?) {
-  view.setCorners(corners)
-}
-
 class PageCornerEditorView  @JvmOverloads constructor(
   context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) :
   AppCompatImageView(context, attrs, defStyleAttr) {

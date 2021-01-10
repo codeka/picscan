@@ -35,13 +35,20 @@
         tools:layout="@layout/fragment_camera" >
         <action
             android:id="@+id/toPageDetectFragment"
-            app:destination="@id/pageDetectFragment" />
+            app:destination="@id/PageDetectFragment" />
     </fragment>
     <fragment
-        android:id="@+id/pageDetectFragment"
+        android:id="@+id/PageDetectFragment"
         android:name="com.codeka.picscan.ui.PageDetectFragment"
         android:label="@string/fragment_page_detect"
         tools:layout="@layout/fragment_page_detect">
-        <argument android:name="pageId" app:argType="long" />
+        <action
+            android:id="@+id/toColorFilterFragment"
+            app:destination="@id/ColorFilterFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/ColorFilterFragment"
+        android:name="com.codeka.picscan.ui.ColorFilterFragment"
+        android:label="@string/fragment_color_filter">
     </fragment>
 </navigation>

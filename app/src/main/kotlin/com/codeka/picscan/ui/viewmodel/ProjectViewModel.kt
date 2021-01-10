@@ -57,10 +57,10 @@ class ProjectViewModel : ViewModel() {
     // TODO
   }
 
-  fun getPageViewModel(pageId: Long): PageViewModel? {
+  fun findPage(pageId: Long): Page? {
     for (p in project.value!!.pages) {
       if (p.id == pageId) {
-        return PageViewModel(p)
+        return p
       }
     }
 

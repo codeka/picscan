@@ -18,6 +18,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.codeka.picscan.R
 import com.codeka.picscan.databinding.FragmentCameraBinding
+import com.codeka.picscan.ui.viewmodel.PageViewModel
 import com.codeka.picscan.ui.viewmodel.ProjectViewModel
 import java.io.File
 import java.text.SimpleDateFormat
@@ -103,7 +104,12 @@ class CameraFragment : Fragment() {
 
           val vm: ProjectViewModel by navGraphViewModels(R.id.nav_graph)
           vm.addPhoto(savedUri).observe(viewLifecycleOwner) {
-            findNavController().navigate(CameraFragmentDirections.toPageDetectFragment(it))
+            val pageVm: PageViewModel by navGraphViewModels(R.id.nav_graph)
+            val page = vm.findPage(it)
+            if (page != null) {
+              pageVm.reset(page)
+              findNavController().navigate(CameraFragmentDirections.toPageDetectFragment())
+            }
           }
         }
       })

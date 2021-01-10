@@ -21,17 +21,38 @@ import java.util.*
 import java.util.Collections.sort
 import kotlin.Comparator
 import kotlin.collections.ArrayList
+import kotlin.math.pow
+import kotlin.math.sqrt
 
+class PageViewModel : ViewModel() {
+  var page: Page? = null
 
-class PageViewModel(val page: Page) : ViewModel() {
   val bmp: MutableLiveData<Bitmap> = MutableLiveData()
   val corners: MutableLiveData<PageCorners> = MutableLiveData()
+
+  // The bitmap after it's been transformed so the corner are the actual corners.
+  val transformedBmp: MutableLiveData<Bitmap> = MutableLiveData()
 
   // TODO: disable for prod?
   private val enableDebug = true
   val debugBmp: MutableLiveData<Bitmap> = MutableLiveData()
 
-  /** Attempt to find the edges of the page for the current image. */
+  fun reset(page: Page) {
+    this.page = page
+    bmp.value = null
+    corners.value = null
+    transformedBmp.value = null
+
+    Picasso.get().load(page.photoUri).into(target)
+  }
+
+  /**
+   * Attempt to find the edges of the page for the current image.
+   *
+   * <p>This function calculates initial values for [corners] by doing some operations on the
+   * original [bmp]. You can make manual adjustments to the corners, or just use the auto calculated
+   * ones and then call [transformCorners] to create [transformedBmp].
+   */
   fun findEdges() {
     viewModelScope.launch {
       withContext(Dispatchers.Default) {
@@ -67,8 +88,10 @@ class PageViewModel(val page: Page) : ViewModel() {
           c.bottomLeft.x = points[3].x.toFloat()
           c.bottomLeft.y = points[3].y.toFloat()
 
-          Log.i(TAG, "Edges = ${c.topLeft.x},${c.topLeft.y} - ${c.topRight.x},${c.topRight.y}" +
-              " - ${c.bottomRight.x},${c.bottomRight.y} - ${c.bottomLeft.x},${c.bottomLeft.y}")
+          Log.i(
+            TAG, "Edges = ${c.topLeft.x},${c.topLeft.y} - ${c.topRight.x},${c.topRight.y}" +
+                " - ${c.bottomRight.x},${c.bottomRight.y} - ${c.bottomLeft.x},${c.bottomLeft.y}"
+          )
 
           withContext(Dispatchers.Main) {
             corners.value = c
@@ -78,6 +101,67 @@ class PageViewModel(val page: Page) : ViewModel() {
         }
         edges.release()
         origMat.release()
+      }
+    }
+  }
+
+  fun transformCorners() {
+    viewModelScope.launch {
+      withContext(Dispatchers.Default) {
+        Log.i(TAG, "Transforming bitmap")
+
+        val src = Mat()
+        bitmapToMat(bmp.value!!, src)
+
+        // Figure out the final width/height of the transformed image. We'll make it the minimum
+        // of the width of the quadrilateral we've defined by corners.
+        val pageCorers = corners.value!!
+        val widthTop = sqrt(
+          (pageCorers.topRight.x.toDouble() - pageCorers.topLeft.x).pow(2.0) +
+              (pageCorers.topRight.y.toDouble() - pageCorers.topLeft.y).pow(2.0)
+        )
+        val widthBottom = sqrt(
+          (pageCorers.bottomRight.x.toDouble() - pageCorers.bottomLeft.x).pow(2.0) +
+              (pageCorers.bottomRight.y.toDouble() - pageCorers.bottomLeft.y).pow(2.0)
+        )
+        val width = widthTop.coerceAtMost(widthBottom)
+
+        val heightLeft = sqrt(
+          (pageCorers.bottomLeft.x.toDouble() - pageCorers.topLeft.x).pow(2.0) +
+              (pageCorers.bottomLeft.y.toDouble() - pageCorers.topLeft.y).pow(2.0)
+        )
+        val heightRight = sqrt(
+          (pageCorers.bottomRight.x.toDouble() - pageCorers.topRight.x).pow(2.0) +
+              (pageCorers.bottomRight.y.toDouble() - pageCorers.topRight.y).pow(2.0)
+        )
+        val height = heightLeft.coerceAtMost(heightRight)
+        Log.i(TAG, "Calculated size: $width,$height")
+
+        // Get the perspective transform by creating two matrices containing the source points
+        // and destination points
+        val srcMat = Mat(4, 1, CvType.CV_32FC2)
+        srcMat.put(
+          0, 0,
+          pageCorers.topLeft.x.toDouble(), pageCorers.topLeft.y.toDouble(),
+          pageCorers.topRight.x.toDouble(), pageCorers.topRight.y.toDouble(),
+          pageCorers.bottomRight.x.toDouble(), pageCorers.bottomRight.y.toDouble(),
+          pageCorers.bottomLeft.x.toDouble(), pageCorers.bottomLeft.y.toDouble()
+        );
+
+        val dstMat = Mat(4, 1, CvType.CV_32FC2)
+        dstMat.put(0, 0, 0.0, 0.0, width, 0.0, width, height, 0.0, height);
+
+        val transformMat = Imgproc.getPerspectiveTransform(srcMat, dstMat)
+
+        // Now perform the perspective transform
+        val transformed = Mat(height.toInt(), width.toInt(), CvType.CV_8UC4)
+        Imgproc.warpPerspective(src, transformed, transformMat, transformed.size())
+
+        val result = Bitmap.createBitmap(width.toInt(), height.toInt(), Bitmap.Config.ARGB_8888)
+        matToBitmap(transformed, result)
+        withContext(Dispatchers.Main) {
+          transformedBmp.value = result
+        }
       }
     }
   }
@@ -118,17 +202,16 @@ class PageViewModel(val page: Page) : ViewModel() {
    */
   private fun sortPoints(src: Array<Point>): Array<Point> {
     val srcPoints = src.toList()
-    val sum: Comparator<Point> = Comparator {
-        lhs, rhs -> (lhs.y + lhs.x).compareTo(rhs.y + rhs.x)
+    val sum: Comparator<Point> = Comparator { lhs, rhs -> (lhs.y + lhs.x).compareTo(rhs.y + rhs.x)
     }
-    val diff: Comparator<Point> = Comparator {
-        lhs, rhs -> (lhs.y - lhs.x).compareTo(rhs.y - rhs.x)
+    val diff: Comparator<Point> = Comparator { lhs, rhs -> (lhs.y - lhs.x).compareTo(rhs.y - rhs.x)
     }
     return arrayOf(
       Collections.min(srcPoints, sum),
       Collections.min(srcPoints, diff),
       Collections.max(srcPoints, sum),
-      Collections.max(srcPoints, diff))
+      Collections.max(srcPoints, diff)
+    )
   }
 
   private val target = object : Target {
@@ -142,10 +225,6 @@ class PageViewModel(val page: Page) : ViewModel() {
 
     override fun onPrepareLoad(placeHolderDrawable: Drawable?) {
     }
-  }
-
-  init {
-    Picasso.get().load(page.photoUri).into(target)
   }
 
   companion object {
