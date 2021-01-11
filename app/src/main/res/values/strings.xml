@@ -2,10 +2,7 @@
   <string name="app_name">PicScan</string>
   <string name="action_settings">Settings</string>
 
-  <!-- Strings used for fragments for navigation -->
-  <string name="doclist_fragment_label">Doclist</string>
-  <string name="second_fragment_label">Second Fragment</string>
-
+  <string name="fragment_home">PicScan</string>
   <string name="fragment_camera">Take photo</string>
   <string name="fragment_page_detect">Find page edges</string>
   <string name="fragment_color_filter">Touch-up image</string>

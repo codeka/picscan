@@ -12,21 +12,20 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.codeka.picscan.R
-import com.codeka.picscan.databinding.FragmentDoclistBinding
+import com.codeka.picscan.databinding.FragmentHomeBinding
 import com.codeka.picscan.ui.viewmodel.ProjectViewModel
 
 /**
- * A simple [Fragment] subclass as the default destination in the navigation.
+ * The home fragment that shows a list of all your past projects and lets you start new ones.
  */
-class DoclistFragment : Fragment() {
-  private var _binding: FragmentDoclistBinding? = null
-  private val binding get() = _binding!!
+class HomeFragment : Fragment() {
+  private lateinit var binding: FragmentHomeBinding
 
   override fun onCreateView(
       inflater: LayoutInflater, container: ViewGroup?,
       savedInstanceState: Bundle?
   ): View {
-    _binding = FragmentDoclistBinding.inflate(inflater, container, false)
+    binding = FragmentHomeBinding.inflate(inflater, container, false)
     return binding.root
   }
 
@@ -63,18 +62,12 @@ class DoclistFragment : Fragment() {
     val vm: ProjectViewModel by navGraphViewModels(R.id.nav_graph)
     vm.create()
 
-    findNavController().navigate(DoclistFragmentDirections.toCameraFragment())
+    findNavController().navigate(HomeFragmentDirections.toCameraFragment())
   }
 
   private fun cameraPermissionsGranted() = CAMERA_REQUIRED_PERMISSIONS.all {
     ContextCompat.checkSelfPermission(requireContext(), it) == PackageManager.PERMISSION_GRANTED
   }
-
-  override fun onDestroyView() {
-    super.onDestroyView()
-    _binding = null
-  }
-
 
   private companion object {
     private const val CAMERA_PERMISSIONS_REQUEST_CODE = 1934;

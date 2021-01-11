@@ -3,13 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/DoclistFragment">
+    app:startDestination="@id/HomeFragment">
 
     <fragment
-        android:id="@+id/DoclistFragment"
-        android:name="com.codeka.picscan.ui.DoclistFragment"
-        android:label="@string/doclist_fragment_label"
-        tools:layout="@layout/fragment_doclist">
+        android:id="@+id/HomeFragment"
+        android:name="com.codeka.picscan.ui.HomeFragment"
+        android:label="@string/fragment_home"
+        tools:layout="@layout/fragment_home">
 
         <action
             android:id="@+id/toCameraFragment"
@@ -44,7 +44,7 @@
         <action
             android:id="@+id/toProjectFragment"
             app:destination="@id/ProjectFragment"
-            app:popUpTo="@id/DoclistFragment"
+            app:popUpTo="@id/HomeFragment"
             app:popUpToInclusive="true" />
     </fragment>
     <fragment
