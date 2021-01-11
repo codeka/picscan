@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -54,6 +55,9 @@ class ProjectFragment : Fragment() {
     binding.pages.layoutManager = LinearLayoutManager(requireContext())
     binding.pages.adapter = PageViewAdapter(projectViewModel.project, viewLifecycleOwner)
 
+    binding.newPage.setOnClickListener {
+      findNavController().navigate(ProjectFragmentDirections.toCameraFragment())
+    }
     binding.export.setOnClickListener {
       projectViewModel.export(requireContext(), this)
     }

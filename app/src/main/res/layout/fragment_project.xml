@@ -59,5 +59,15 @@
         android:text="@string/share"
         android:drawableEnd="@drawable/ic_export_pdf" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/newPage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"
+        app:srcCompat="@drawable/ic_add_a_photo"
+        app:layout_constraintBottom_toTopOf="@id/bottom_buttons"
+        app:layout_constraintEnd_toEndOf="parent" />
+
   </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
