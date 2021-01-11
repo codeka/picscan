@@ -46,8 +46,10 @@ class ColorFilterFragment : Fragment() {
 
     binding.finish.setOnClickListener {
       CoroutineScope(Dispatchers.Main).launch {
-        projectViewModel.addPage(pageViewModel.page!!)
-        projectViewModel.save()
+        if (pageViewModel.page?.id == 0L) {
+          projectViewModel.addPage(pageViewModel.page!!)
+          projectViewModel.save()
+        }
         pageViewModel.save()
 
         findNavController().navigate(ColorFilterFragmentDirections.toProjectFragment())
