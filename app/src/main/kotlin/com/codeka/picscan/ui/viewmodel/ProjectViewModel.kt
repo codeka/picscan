@@ -3,6 +3,7 @@ package com.codeka.picscan.ui.viewmodel
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.core.content.FileProvider
 import androidx.lifecycle.*
 import com.codeka.picscan.App
@@ -60,12 +61,10 @@ class ProjectViewModel : ViewModel() {
   }
 
   /** Saves the project to the data store. */
-  fun save() {
-    viewModelScope.launch {
-      val projectWithPages = project.value
-      if (projectWithPages != null) {
-        repo.save(projectWithPages)
-      }
+  suspend fun save() {
+    val projectWithPages = project.value
+    if (projectWithPages != null) {
+      repo.save(projectWithPages)
     }
   }
 
@@ -96,23 +95,22 @@ class ProjectViewModel : ViewModel() {
     return null
   }
 
-  fun addPhoto(uri: Uri): LiveData<Long> {
-    val id = MutableLiveData<Long>()
-    viewModelScope.launch {
-      val proj = project.value!!
-      val page = Page(
-        id = 0, projectId = proj.project.id, photoUri = uri.toString(), corners = PageCorners(),
-        filter = ImageFilterType.None)
+  /** Create a new page, not saved to the data store yet. */
+  fun newPage(photoUri: Uri): Page {
+    val proj = project.value!!
+    return Page(
+      id = 0, projectId = proj.project.id, photoUri = photoUri.toString(), corners = PageCorners(),
+      filter = ImageFilterType.None)
+  }
 
-      val pages = ArrayList(proj.pages)
-      pages.add(page)
-      proj.pages = pages
-
-      repo.save(proj)
-      project.value = proj
-      id.value = page.id
-    }
-
-    return id
+  /**
+   * Adds a page, created by [newPage], to our list we keep track of. Only do this after the page
+   * has been filled out with the filtered bitmap, etc.
+   */
+  fun addPage(page: Page) {
+    val proj = project.value!!
+    val pages = ArrayList(proj.pages)
+    pages.add(page)
+    proj.pages = pages
   }
 }

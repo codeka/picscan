@@ -103,14 +103,9 @@ class CameraFragment : Fragment() {
           val savedUri = Uri.fromFile(photoFile)
 
           val vm: ProjectViewModel by navGraphViewModels(R.id.nav_graph)
-          vm.addPhoto(savedUri).observe(viewLifecycleOwner) {
-            val pageVm: PageViewModel by navGraphViewModels(R.id.nav_graph)
-            val page = vm.findPage(it)
-            if (page != null) {
-              pageVm.reset(page)
-              findNavController().navigate(CameraFragmentDirections.toPageDetectFragment())
-            }
-          }
+          val pageVm: PageViewModel by navGraphViewModels(R.id.nav_graph)
+          pageVm.reset(vm.newPage(savedUri))
+          findNavController().navigate(CameraFragmentDirections.toPageDetectFragment())
         }
       })
   }

@@ -60,20 +60,25 @@ class PageViewModel : ViewModel() {
   }
 
   /** Saves the current [PageViewModel] back to the database. */
-  fun save() {
+  suspend fun save() {
+    val page = this.page
+    if (page == null || page.id == 0L) {
+      throw IllegalStateException("Cannot call PageViewModel.save() before ProjectViewModel.save()")
+    }
+
     // First, save the final bitmap to disk.
     val outputDirectory = File(App.filesDir, "images")
     outputDirectory.mkdirs()
-    val outputFile = File(outputDirectory, "%06d.jpg".format(page!!.id))
+    val outputFile = File(outputDirectory, "%06d.jpg".format(page.id))
     Log.i(TAG, "Saving image: ${outputFile.absolutePath}")
-    FileOutputStream(outputFile).use {
-      filteredBmp.value!!.compress(Bitmap.CompressFormat.JPEG, 90, it)
+    withContext(Dispatchers.IO) {
+      FileOutputStream(outputFile).use {
+        filteredBmp.value!!.compress(Bitmap.CompressFormat.JPEG, 90, it)
+      }
     }
 
-    page!!.corners = corners.value!!
-    viewModelScope.launch {
-      repo.savePage(page!!)
-    }
+    page.corners = corners.value!!
+    repo.savePage(page)
   }
 
   /**

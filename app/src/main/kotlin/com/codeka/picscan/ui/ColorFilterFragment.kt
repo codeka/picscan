@@ -12,6 +12,10 @@ import com.codeka.picscan.databinding.FragmentColorFilterBinding
 import com.codeka.picscan.model.ImageFilterType
 import com.codeka.picscan.ui.viewmodel.PageViewModel
 import com.codeka.picscan.ui.viewmodel.ProjectViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * A simple [Fragment] subclass.
@@ -41,8 +45,13 @@ class ColorFilterFragment : Fragment() {
     }
 
     binding.finish.setOnClickListener {
-      pageViewModel.save()
-      findNavController().navigate(ColorFilterFragmentDirections.toProjectFragment())
+      CoroutineScope(Dispatchers.Main).launch {
+        projectViewModel.addPage(pageViewModel.page!!)
+        projectViewModel.save()
+        pageViewModel.save()
+
+        findNavController().navigate(ColorFilterFragmentDirections.toProjectFragment())
+      }
     }
 
     return binding.root

@@ -18,6 +18,9 @@ import com.codeka.picscan.export.PdfExporter
 import com.codeka.picscan.model.ProjectWithPages
 import com.codeka.picscan.ui.viewmodel.ProjectViewModel
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 
 /**
@@ -39,7 +42,9 @@ class ProjectFragment : Fragment() {
 
     val projectViewModel: ProjectViewModel by navGraphViewModels(R.id.nav_graph)
     projectViewModel.project.observe(viewLifecycleOwner) {
-      projectViewModel.save()
+      CoroutineScope(Dispatchers.Main).launch {
+        projectViewModel.save()
+      }
     }
     projectViewModel.project.value
 
