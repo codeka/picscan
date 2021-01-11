@@ -33,10 +33,6 @@ class DoclistFragment : Fragment() {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
 
-    binding.buttonFirst.setOnClickListener {
-      findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
-    }
-
     binding.fab.setOnClickListener {
       if (!cameraPermissionsGranted()) {
         requestPermissions(CAMERA_REQUIRED_PERMISSIONS, CAMERA_PERMISSIONS_REQUEST_CODE)
@@ -67,7 +63,7 @@ class DoclistFragment : Fragment() {
     val vm: ProjectViewModel by navGraphViewModels(R.id.nav_graph)
     vm.create()
 
-    findNavController().navigate(R.id.action_DoclistFragment_to_cameraFragment)
+    findNavController().navigate(DoclistFragmentDirections.toCameraFragment())
   }
 
   private fun cameraPermissionsGranted() = CAMERA_REQUIRED_PERMISSIONS.all {

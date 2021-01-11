@@ -9,6 +9,7 @@
   <string name="fragment_camera">Take photo</string>
   <string name="fragment_page_detect">Find page edges</string>
   <string name="fragment_color_filter">Touch-up image</string>
+  <string name="fragment_project">Project</string>
 
   <string name="next">Next</string>
   <string name="finish">Finish</string>

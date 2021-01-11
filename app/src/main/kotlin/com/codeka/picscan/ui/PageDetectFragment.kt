@@ -39,7 +39,7 @@ class PageDetectFragment : Fragment() {
     binding.page = pageViewModel
 
     binding.next.setOnClickListener {
-      pageViewModel?.transformCorners()
+      pageViewModel.transformCorners()
       findNavController().navigate(PageDetectFragmentDirections.toColorFilterFragment())
     }
 

@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.codeka.picscan.App
 import com.codeka.picscan.model.*
 import kotlinx.coroutines.launch
-import org.opencv.core.Mat
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.chrono.Chronology
@@ -41,7 +40,7 @@ class ProjectViewModel : ViewModel() {
         id = 0,
         draft = true,
         createDate = now.toEpochSecond(ZoneOffset.UTC),
-        name = String.format(locale, "scan ", format.format(now)))
+        name = String.format(locale, "scan %s", format.format(now)))
 
       val projectWithPages = ProjectWithPages(proj, pages = arrayListOf())
       repo.save(projectWithPages)
@@ -55,6 +54,16 @@ class ProjectViewModel : ViewModel() {
    */
   fun load(id: Long) {
     // TODO
+  }
+
+  /** Saves the project to the data store. */
+  fun save() {
+    viewModelScope.launch {
+      val projectWithPages = project.value
+      if (projectWithPages != null) {
+        repo.save(projectWithPages)
+      }
+    }
   }
 
   fun findPage(pageId: Long): Page? {
@@ -72,7 +81,8 @@ class ProjectViewModel : ViewModel() {
     viewModelScope.launch {
       val proj = project.value!!
       val page = Page(
-        id = 0, projectId = proj.project.id, photoUri = uri.toString(), corners = PageCorners())
+        id = 0, projectId = proj.project.id, photoUri = uri.toString(), corners = PageCorners(),
+        filter = ImageFilterType.None)
 
       val pages = ArrayList(proj.pages)
       pages.add(page)
@@ -84,9 +94,5 @@ class ProjectViewModel : ViewModel() {
     }
 
     return id
-  }
-
-  fun thing() {
-    Mat()
   }
 }

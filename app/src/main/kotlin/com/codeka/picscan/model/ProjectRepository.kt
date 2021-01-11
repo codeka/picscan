@@ -18,6 +18,19 @@ class ProjectRepository(private val projectDao: ProjectDao) {
     }
   }
 
+  /** Saves just the given [Page] to the data store. */
+  suspend fun savePage(page: Page) {
+    // You can't use this method the first  time you save a page, you've got to add it to the
+    // project first and save the project.
+    if (page.id == 0L || page.projectId == 0L) {
+      throw IllegalArgumentException("Cannot save a page if it has never been saved before.")
+    }
+
+    withContext(Dispatchers.IO) {
+      projectDao.savePage(page)
+    }
+  }
+
   companion object {
     fun create(context: Context): ProjectRepository {
       return ProjectRepository(Store.get(context).projects())

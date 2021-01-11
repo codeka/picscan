@@ -6,8 +6,11 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.codeka.picscan.App
+import com.codeka.picscan.model.ImageFilterType
 import com.codeka.picscan.model.Page
 import com.codeka.picscan.model.PageCorners
+import com.codeka.picscan.model.ProjectRepository
 import com.squareup.picasso.Picasso
 import com.squareup.picasso.Target
 import kotlinx.coroutines.Dispatchers
@@ -17,6 +20,8 @@ import org.opencv.android.Utils.bitmapToMat
 import org.opencv.android.Utils.matToBitmap
 import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
+import java.io.File
+import java.io.FileOutputStream
 import java.util.*
 import java.util.Collections.sort
 import kotlin.Comparator
@@ -26,6 +31,8 @@ import kotlin.math.sqrt
 
 
 class PageViewModel : ViewModel() {
+  private val repo = ProjectRepository.create(App)
+
   var page: Page? = null
 
   val bmp: MutableLiveData<Bitmap> = MutableLiveData()
@@ -42,6 +49,7 @@ class PageViewModel : ViewModel() {
   private val enableDebug = true
   val debugBmp: MutableLiveData<Bitmap> = MutableLiveData()
 
+  /** Reset this [PageViewModel] to refer to the given page. */
   fun reset(page: Page) {
     this.page = page
     bmp.value = null
@@ -49,6 +57,22 @@ class PageViewModel : ViewModel() {
     transformedBmp.value = null
 
     Picasso.get().load(page.photoUri).into(target)
+  }
+
+  /** Saves the current [PageViewModel] back to the database. */
+  fun save() {
+    // First, save the final bitmap to disk.
+    val outputDirectory = File(App.filesDir, "images")
+    outputDirectory.mkdirs()
+    val outputFile = File(outputDirectory, "%06d.jpg".format(page!!.id))
+    FileOutputStream(outputFile).use {
+      filteredBmp.value!!.compress(Bitmap.CompressFormat.JPEG, 90, it)
+    }
+
+    page!!.corners = corners.value!!
+    viewModelScope.launch {
+      repo.savePage(page!!)
+    }
   }
 
   /**

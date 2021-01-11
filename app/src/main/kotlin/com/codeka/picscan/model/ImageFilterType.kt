@@ -1,4 +1,4 @@
-package com.codeka.picscan.ui.viewmodel
+package com.codeka.picscan.model
 
 enum class ImageFilterType {
   None,

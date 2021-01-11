@@ -19,5 +19,8 @@ data class Page (
   val photoUri: String,
 
   @Embedded
-  val corners: PageCorners
+  var corners: PageCorners,
+
+  /** The [ImageFilterType] that we used to filter the image. */
+  var filter: ImageFilterType
 )

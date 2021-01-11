@@ -12,21 +12,11 @@
         tools:layout="@layout/fragment_doclist">
 
         <action
-            android:id="@+id/action_FirstFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
-        <action
-            android:id="@+id/action_DoclistFragment_to_cameraFragment"
+            android:id="@+id/toCameraFragment"
             app:destination="@id/CameraFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/SecondFragment"
-        android:name="com.codeka.picscan.SecondFragment"
-        android:label="@string/second_fragment_label"
-        tools:layout="@layout/fragment_second">
-
         <action
-            android:id="@+id/action_SecondFragment_to_FirstFragment"
-            app:destination="@id/DoclistFragment" />
+            android:id="@+id/toProjectFragment"
+            app:destination="@id/ProjectFragment" />
     </fragment>
     <fragment
         android:id="@+id/CameraFragment"
@@ -49,6 +39,17 @@
     <fragment
         android:id="@+id/ColorFilterFragment"
         android:name="com.codeka.picscan.ui.ColorFilterFragment"
-        android:label="@string/fragment_color_filter">
+        android:label="@string/fragment_color_filter"
+        tools:layout="@layout/fragment_color_filter">
+        <action
+            android:id="@+id/toProjectFragment"
+            app:destination="@id/ProjectFragment"
+            app:popUpTo="@id/DoclistFragment"
+            app:popUpToInclusive="true" />
     </fragment>
+    <fragment
+        android:id="@+id/ProjectFragment"
+        android:name="com.codeka.picscan.ui.ProjectFragment"
+        android:label="@string/fragment_project"
+        tools:layout="@layout/fragment_project" />
 </navigation>

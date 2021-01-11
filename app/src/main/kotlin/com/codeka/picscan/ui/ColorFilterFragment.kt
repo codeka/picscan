@@ -5,10 +5,11 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.codeka.picscan.R
 import com.codeka.picscan.databinding.FragmentColorFilterBinding
-import com.codeka.picscan.ui.viewmodel.ImageFilterType
+import com.codeka.picscan.model.ImageFilterType
 import com.codeka.picscan.ui.viewmodel.PageViewModel
 import com.codeka.picscan.ui.viewmodel.ProjectViewModel
 
@@ -40,7 +41,8 @@ class ColorFilterFragment : Fragment() {
     }
 
     binding.finish.setOnClickListener {
-      // TODO: handle finish button
+      pageViewModel.save()
+      findNavController().navigate(ColorFilterFragmentDirections.toProjectFragment())
     }
 
     return binding.root

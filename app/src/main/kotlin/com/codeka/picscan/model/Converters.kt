@@ -17,4 +17,17 @@ class Converters {
       return PointF(parts[0].toFloat(), parts[1].toFloat())
     }
   }
+
+  @TypeConverter
+  fun fromImageFilterType(value: ImageFilterType?): String? {
+    return value?.toString()
+  }
+
+  @TypeConverter
+  fun toImageFilterType(value: String?): ImageFilterType? {
+    if (value == null) {
+      return null
+    }
+    return ImageFilterType.valueOf(value)
+  }
 }
