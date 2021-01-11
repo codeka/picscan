@@ -14,6 +14,7 @@ import com.codeka.picscan.App
 import com.codeka.picscan.R
 import com.codeka.picscan.databinding.FragmentProjectBinding
 import com.codeka.picscan.databinding.ProjectPageRowBinding
+import com.codeka.picscan.export.PdfExporter
 import com.codeka.picscan.model.ProjectWithPages
 import com.codeka.picscan.ui.viewmodel.ProjectViewModel
 import com.squareup.picasso.Picasso
@@ -47,6 +48,10 @@ class ProjectFragment : Fragment() {
 
     binding.pages.layoutManager = LinearLayoutManager(requireContext())
     binding.pages.adapter = PageViewAdapter(projectViewModel.project, viewLifecycleOwner)
+
+    binding.export.setOnClickListener {
+      projectViewModel.export(requireContext(), this)
+    }
 
     return binding.root
   }

@@ -1,13 +1,16 @@
 package com.codeka.picscan.ui.viewmodel
 
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.core.content.FileProvider
+import androidx.lifecycle.*
 import com.codeka.picscan.App
+import com.codeka.picscan.export.PdfExporter
 import com.codeka.picscan.model.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.chrono.Chronology
@@ -62,6 +65,23 @@ class ProjectViewModel : ViewModel() {
       val projectWithPages = project.value
       if (projectWithPages != null) {
         repo.save(projectWithPages)
+      }
+    }
+  }
+
+  fun export(context: Context, lifecycleOwner: LifecycleOwner) {
+    viewModelScope.launch {
+      val exporter = PdfExporter()
+      exporter.export(project.value!!).observe(lifecycleOwner) {
+        val intent = Intent(Intent.ACTION_SEND)
+
+        intent.type = "application/pdf"
+
+        intent.putExtra(
+          Intent.EXTRA_STREAM,
+          FileProvider.getUriForFile(context, "com.codeka.picscan.FileProvider", it))
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Share") // TODO: subject?
+        context.startActivity(intent)
       }
     }
   }

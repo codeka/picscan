@@ -65,6 +65,7 @@ class PageViewModel : ViewModel() {
     val outputDirectory = File(App.filesDir, "images")
     outputDirectory.mkdirs()
     val outputFile = File(outputDirectory, "%06d.jpg".format(page!!.id))
+    Log.i(TAG, "Saving image: ${outputFile.absolutePath}")
     FileOutputStream(outputFile).use {
       filteredBmp.value!!.compress(Bitmap.CompressFormat.JPEG, 90, it)
     }
