@@ -58,14 +58,17 @@ class PdfExporter {
     val destRect = if (srcRect.width() > srcRect.height()) {
       val ratio = srcRect.height().toDouble() / srcRect.width()
       val destHeight = canvas.width * ratio
-      Log.i(TAG, "height < width ratio=$ratio canvas.width=${canvas.width} canvas.height=${canvas.height} destHeight=$destHeight")
+      Log.i(TAG, "height < width ratio=$ratio canvas.width=${canvas.width} " +
+          "canvas.height=${canvas.height} destHeight=$destHeight")
       Rect(
         0, (canvas.height / 2.0 - destHeight / 2.0).toInt(),
         canvas.width, (canvas.height / 2.0 + destHeight / 2.0).toInt())
     } else {
       val ratio = srcRect.width().toDouble() / srcRect.height()
       val destWidth = canvas.height * ratio
-      Log.i(TAG, "width < height ratio=$ratio srcRect.width=${srcRect.width()} srcRect.height=${srcRect.height()} canvas.width=${canvas.width} canvas.height=${canvas.height} destWidth=$destWidth")
+      Log.i(TAG, "width < height ratio=$ratio srcRect.width=${srcRect.width()} " +
+          "srcRect.height=${srcRect.height()} canvas.width=${canvas.width} " +
+          "canvas.height=${canvas.height} destWidth=$destWidth")
       Rect(
         (canvas.width / 2 - destWidth / 2).toInt(), 0,
         (canvas.width / 2 + destWidth / 2).toInt(), canvas.height)
