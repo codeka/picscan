@@ -47,7 +47,8 @@ class PageViewModel : ViewModel() {
 
   // TODO: disable for prod?
   private val enableDebug = true
-  val debugBmp: MutableLiveData<Bitmap> = MutableLiveData()
+  val debugEdgeDetectBmp: MutableLiveData<Bitmap> = MutableLiveData()
+  val debugContoursBmp: MutableLiveData<Bitmap> = MutableLiveData()
 
   /** Reset this [PageViewModel] to refer to the given page. */
   fun reset(page: Page) {
@@ -105,7 +106,7 @@ class PageViewModel : ViewModel() {
             Bitmap.createBitmap(bmp.value!!.width, bmp.value!!.height, Bitmap.Config.ARGB_8888)
           matToBitmap(edges, outBmp)
           withContext(Dispatchers.Main) {
-            debugBmp.value = outBmp
+            debugEdgeDetectBmp.value = outBmp
           }
         }
 
@@ -237,9 +238,22 @@ class PageViewModel : ViewModel() {
   }
 
   // TODO: keep the other contours as well, so we can snap to them when you edit and stuff...
-  private fun findLargestContour(src: Mat): MatOfPoint2f? {
+  private suspend fun findLargestContour(src: Mat): MatOfPoint2f? {
     val contours = ArrayList<MatOfPoint>()
     Imgproc.findContours(src, contours, Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE)
+
+    if (enableDebug) {
+      val outMat = Mat(src.rows(), src.cols(), CvType.CV_8UC4)
+      outMat.setTo(Scalar(0.0, 0.0, 0.0, 255.0))
+      Imgproc.drawContours(outMat, contours, -1, Scalar(0.0, 255.0, 0.0, 255.0), 10)
+
+      val outBmp =
+        Bitmap.createBitmap(src.cols(), src.rows(), Bitmap.Config.ARGB_8888)
+      matToBitmap(outMat, outBmp)
+      withContext(Dispatchers.Main) {
+        debugContoursBmp.value = outBmp
+      }
+    }
 
     // Get the 5 largest contours
     sort(contours) { o1, o2 ->

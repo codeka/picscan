@@ -11,6 +11,7 @@ import com.codeka.picscan.databinding.FragmentPageDetectBinding
 import com.codeka.picscan.model.Page
 import com.codeka.picscan.ui.viewmodel.PageViewModel
 import com.codeka.picscan.ui.viewmodel.ProjectViewModel
+import com.codeka.picscan.util.observeOnce
 
 /**
  * PageDetectFragment takes the photo from a [Page] and uses OpenCV to figure out where the edges
@@ -19,6 +20,8 @@ import com.codeka.picscan.ui.viewmodel.ProjectViewModel
  */
 class PageDetectFragment : Fragment() {
   private lateinit var binding: FragmentPageDetectBinding
+
+  private var debugShowing = 0
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -54,8 +57,21 @@ class PageDetectFragment : Fragment() {
     return when (item.itemId) {
       R.id.action_show_debug -> {
         val pageViewModel: PageViewModel by navGraphViewModels(R.id.nav_graph)
-        pageViewModel.debugBmp.observe(viewLifecycleOwner) {
-          binding.image.setImageBitmap(it)
+        if (debugShowing == 0) {
+          pageViewModel.debugEdgeDetectBmp.observeOnce(viewLifecycleOwner) {
+            binding.image.setImageBitmap(it)
+            debugShowing = 1
+          }
+        } else if (debugShowing == 1) {
+          pageViewModel.debugContoursBmp.observeOnce(viewLifecycleOwner) {
+            binding.image.setImageBitmap(it)
+            debugShowing = 2
+          }
+        } else {
+          pageViewModel.bmp.observeOnce(viewLifecycleOwner) {
+            binding.image.setImageBitmap(it)
+            debugShowing = 0
+          }
         }
         true
       }
