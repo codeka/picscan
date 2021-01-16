@@ -3,6 +3,7 @@ package com.codeka.picscan.ui.viewmodel
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.util.Log
+import androidx.camera.core.ImageProxy
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -226,12 +227,28 @@ class PageViewModel : ViewModel() {
           bitmapToMat(srcBmp, src)
 
           // TODO: this is just a test filter...
-          Imgproc.cvtColor(src,src,Imgproc.COLOR_RGBA2GRAY);
-          Imgproc.adaptiveThreshold(
-            src, src, 255.0, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY, 15, 15.0);
+
+          // First, a median blur with a largish matrix size will remove small details (like text)
+          // https://medium.com/@florestony5454/median-filtering-with-python-and-opencv-2bce390be0d1
+          val blur = Mat()
+          Imgproc.medianBlur(src, blur, 21);
+
+          // Next, we do a much larger gaussian blur to find the 'average background color'
+          // https://stackoverflow.com/a/62634900
+          Imgproc.GaussianBlur(blur, blur, Size(61.0, 61.0), 0.0)
+
+          // Figure out the mean color (which should be close-ish the background color).
+          val mean = Core.mean(blur).`val`[0]
+
+          // Now, divide the source by the blurred image, to remove the large details.
+          val res = src.clone()
+          Core.divide(src, blur, res, mean, -1)
+
+          // Finally, adjust the contrast a bit to make the blacks more defined.
+          adjustContrastBrightness(res, 64.0, 0.0)
 
           val result = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-          matToBitmap(src, result)
+          matToBitmap(res, result)
 
           withContext(Dispatchers.Main) {
             filteredBmp.value = result
@@ -242,16 +259,26 @@ class PageViewModel : ViewModel() {
     }
   }
 
-  val colors = arrayOf(
-    Scalar(255.0, 255.0, 255.0, 255.0),
-    Scalar(0.0, 255.0, 255.0, 255.0),
-    Scalar(255.0, 0.0, 255.0, 255.0),
-    Scalar(255.0, 255.0, 0.0, 255.0),
-    Scalar(0.0, 0.0, 255.0, 255.0),
-    Scalar(0.0, 255.0, 0.0, 255.0),
-    Scalar(255.0, 0.0, 0.0, 255.0),
-    Scalar(0.0, 255.0, 255.0, 255.0),
-  )
+  private fun adjustContrastBrightness(img: Mat, contrast: Double, brightness: Double) {
+    if (brightness != 0.0) {
+      var shadow = 0.0
+      var highlight = 255.0 + brightness
+      if (brightness > 0.0) {
+        shadow = brightness
+        highlight = 255.0
+      }
+      val alpha = (highlight - shadow) / 255.0
+      val beta = shadow
+      img.convertTo(img, img.type(), alpha, beta)
+    }
+
+    if (contrast != 0.0) {
+      val f = 131.0 * (contrast + 127.0) / (127.0 * (131.0 - contrast))
+      val alpha = f
+      val beta = 127.0*(1.0 - f)
+      img.convertTo(img, img.type(), alpha, beta)
+    }
+  }
 
   // TODO: keep the other contours as well, so we can snap to them when you edit and stuff...
   private suspend fun findLargestContour(src: Mat): MatOfPoint2f? {
@@ -269,7 +296,7 @@ class PageViewModel : ViewModel() {
       val outMat = Mat(src.rows(), src.cols(), CvType.CV_8UC4)
       outMat.setTo(Scalar(0.0, 0.0, 0.0, 255.0))
       for (i in 0..min(7, contours.size)) {
-        Imgproc.drawContours(outMat, contours, i, colors[i], 10)
+        Imgproc.drawContours(outMat, contours, i, contourColors[i], 10)
       }
 
       val outBmp =
@@ -333,5 +360,16 @@ class PageViewModel : ViewModel() {
 
   companion object {
     private const val TAG = "PageViewModel"
+
+    private val contourColors = arrayOf(
+      Scalar(255.0, 255.0, 255.0, 255.0),
+      Scalar(0.0, 255.0, 255.0, 255.0),
+      Scalar(255.0, 0.0, 255.0, 255.0),
+      Scalar(255.0, 255.0, 0.0, 255.0),
+      Scalar(0.0, 0.0, 255.0, 255.0),
+      Scalar(0.0, 255.0, 0.0, 255.0),
+      Scalar(255.0, 0.0, 0.0, 255.0),
+      Scalar(0.0, 255.0, 255.0, 255.0),
+    )
   }
 }
