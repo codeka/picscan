@@ -22,10 +22,12 @@ import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
 import java.io.File
 import java.io.FileOutputStream
+import java.lang.Integer.min
 import java.util.*
 import java.util.Collections.sort
 import kotlin.Comparator
 import kotlin.collections.ArrayList
+import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -98,31 +100,34 @@ class PageViewModel : ViewModel() {
         bitmapToMat(bmp.value!!, origMat)
 
         val edges = Mat()
-        Imgproc.cvtColor(origMat, edges, Imgproc.COLOR_BGR2GRAY)
-        Imgproc.GaussianBlur(edges, edges, Size(11.0, 11.0), 0.0)
-        Imgproc.Canny(edges, edges, 75.0, 200.0)
+        origMat.copyTo(edges)
+        // Resize edges to be a bit smaller
+        Imgproc.resize(edges, edges, Size(), 0.1, 0.1, Imgproc.INTER_CUBIC)
+        Imgproc.cvtColor(edges, edges, Imgproc.COLOR_BGR2GRAY)
+        Imgproc.GaussianBlur(edges, edges, Size(3.0, 3.0), 0.0)
         if (enableDebug) {
           val outBmp =
-            Bitmap.createBitmap(bmp.value!!.width, bmp.value!!.height, Bitmap.Config.ARGB_8888)
+            Bitmap.createBitmap(edges.cols(), edges.rows(), Bitmap.Config.ARGB_8888)
           matToBitmap(edges, outBmp)
           withContext(Dispatchers.Main) {
             debugEdgeDetectBmp.value = outBmp
           }
         }
+        Imgproc.Canny(edges, edges, 10.0, 100.0)
 
         val largestContour = findLargestContour(edges)
         if (largestContour != null) {
           Log.i(TAG, "Found a contour, extracting points")
           val points = sortPoints(largestContour.toArray())
           val c = PageCorners()
-          c.topLeft.x = points[0].x.toFloat()
-          c.topLeft.y = points[0].y.toFloat()
-          c.topRight.x = points[1].x.toFloat()
-          c.topRight.y = points[1].y.toFloat()
-          c.bottomRight.x = points[2].x.toFloat()
-          c.bottomRight.y = points[2].y.toFloat()
-          c.bottomLeft.x = points[3].x.toFloat()
-          c.bottomLeft.y = points[3].y.toFloat()
+          c.topLeft.x = points[0].x.toFloat() * 10.0f
+          c.topLeft.y = points[0].y.toFloat() * 10.0f
+          c.topRight.x = points[1].x.toFloat() * 10.0f
+          c.topRight.y = points[1].y.toFloat() * 10.0f
+          c.bottomRight.x = points[2].x.toFloat() * 10.0f
+          c.bottomRight.y = points[2].y.toFloat() * 10.0f
+          c.bottomLeft.x = points[3].x.toFloat() * 10.0f
+          c.bottomLeft.y = points[3].y.toFloat() * 10.0f
 
           Log.i(
             TAG, "Edges = ${c.topLeft.x},${c.topLeft.y} - ${c.topRight.x},${c.topRight.y}" +
@@ -237,33 +242,48 @@ class PageViewModel : ViewModel() {
     }
   }
 
+  val colors = arrayOf(
+    Scalar(255.0, 255.0, 255.0, 255.0),
+    Scalar(0.0, 255.0, 255.0, 255.0),
+    Scalar(255.0, 0.0, 255.0, 255.0),
+    Scalar(255.0, 255.0, 0.0, 255.0),
+    Scalar(0.0, 0.0, 255.0, 255.0),
+    Scalar(0.0, 255.0, 0.0, 255.0),
+    Scalar(255.0, 0.0, 0.0, 255.0),
+    Scalar(0.0, 255.0, 255.0, 255.0),
+  )
+
   // TODO: keep the other contours as well, so we can snap to them when you edit and stuff...
   private suspend fun findLargestContour(src: Mat): MatOfPoint2f? {
     val contours = ArrayList<MatOfPoint>()
     Imgproc.findContours(src, contours, Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE)
 
+    // Sort contours by size, largest first.
+    sort(contours) { lhs, rhs ->
+      val area1 = Imgproc.contourArea(lhs)
+      val area2 = Imgproc.contourArea(rhs)
+      (area2.toInt() - area1.toInt())
+    }
+
     if (enableDebug) {
       val outMat = Mat(src.rows(), src.cols(), CvType.CV_8UC4)
       outMat.setTo(Scalar(0.0, 0.0, 0.0, 255.0))
-      Imgproc.drawContours(outMat, contours, -1, Scalar(0.0, 255.0, 0.0, 255.0), 10)
+      for (i in 0..min(7, contours.size)) {
+        Imgproc.drawContours(outMat, contours, i, colors[i], 10)
+      }
 
       val outBmp =
         Bitmap.createBitmap(src.cols(), src.rows(), Bitmap.Config.ARGB_8888)
       matToBitmap(outMat, outBmp)
       withContext(Dispatchers.Main) {
         debugContoursBmp.value = outBmp
+        outMat.release()
       }
     }
 
-    // Get the 5 largest contours
-    sort(contours) { o1, o2 ->
-      val area1 = Imgproc.contourArea(o1)
-      val area2 = Imgproc.contourArea(o2)
-      (area2 - area1).toInt()
-    }
-    if (contours.size > 5) {
-      contours.subList(4, contours.size - 1).clear()
-    }
+    //if (contours.size > 5) {
+    //  contours.subList(4, contours.size - 1).clear()
+   // }
     var largest: MatOfPoint2f? = null
     for (contour in contours) {
       val approx = MatOfPoint2f()
