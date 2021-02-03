@@ -6,10 +6,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class ProjectRepository(private val projectDao: ProjectDao) {
-  fun get(id: Int): ProjectWithPages = projectDao.get(id)
+  fun get(id: Long): ProjectWithPages = projectDao.get(id)
+
+  fun getAll(): LiveData<List<Project>> = projectDao.getAll()
 
   /** Saves the given [Project] to the data store. */
   suspend fun save(project: ProjectWithPages) {
+    // TODO: move this withContext to the callers.
     return withContext(Dispatchers.IO) {
       project.project.id = projectDao.save(project.project)
       for (page in project.pages) {

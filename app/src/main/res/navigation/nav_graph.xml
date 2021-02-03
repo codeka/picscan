@@ -51,7 +51,8 @@
         android:id="@+id/ProjectFragment"
         android:name="com.codeka.picscan.ui.ProjectFragment"
         android:label="@string/fragment_project"
-        tools:layout="@layout/fragment_project" >
+        tools:layout="@layout/fragment_project">
+        <argument app:argType="long" android:name="projectId" android:defaultValue="-1L" />
         <action
             android:id="@+id/toCameraFragment"
             app:destination="@id/CameraFragment" />

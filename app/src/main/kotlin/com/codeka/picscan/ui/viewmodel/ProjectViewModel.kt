@@ -57,7 +57,14 @@ class ProjectViewModel : ViewModel() {
    * do anything else.
    */
   fun load(id: Long) {
-    // TODO
+    viewModelScope.launch {
+      withContext(Dispatchers.IO) {
+        val proj = repo.get(id)
+        withContext(Dispatchers.Main) {
+          project.value = proj
+        }
+      }
+    }
   }
 
   /** Saves the project to the data store. */
@@ -112,5 +119,6 @@ class ProjectViewModel : ViewModel() {
     val pages = ArrayList(proj.pages)
     pages.add(page)
     proj.pages = pages
+    project.value = proj
   }
 }

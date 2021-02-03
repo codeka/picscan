@@ -48,6 +48,7 @@ class ColorFilterFragment : Fragment() {
       CoroutineScope(Dispatchers.Main).launch {
         if (pageViewModel.page?.id == 0L) {
           projectViewModel.addPage(pageViewModel.page!!)
+          projectViewModel.project.value?.project?.draft = false
           projectViewModel.save()
         }
         pageViewModel.save()

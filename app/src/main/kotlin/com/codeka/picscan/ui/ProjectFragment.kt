@@ -31,9 +31,15 @@ import java.io.File
 class ProjectFragment : Fragment() {
   private lateinit var binding: FragmentProjectBinding
 
+  private var args: ProjectFragmentArgs? = null
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
+    val bundleArgs = arguments
+    if (bundleArgs != null) {
+      args = ProjectFragmentArgs.fromBundle(bundleArgs)
+    }
   }
 
   override fun onCreateView(
@@ -42,6 +48,10 @@ class ProjectFragment : Fragment() {
     binding = FragmentProjectBinding.inflate(inflater, container, false)
 
     val projectViewModel: ProjectViewModel by navGraphViewModels(R.id.nav_graph)
+    val args = this.args
+    if (args?.projectId != null) {
+      projectViewModel.load(args.projectId)
+    }
     projectViewModel.project.observe(viewLifecycleOwner) {
       CoroutineScope(Dispatchers.Main).launch {
         projectViewModel.save()
