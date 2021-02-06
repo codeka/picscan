@@ -1,10 +1,12 @@
 package com.codeka.picscan.ui
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.findNavController
@@ -57,7 +59,6 @@ class ProjectFragment : Fragment() {
         projectViewModel.save()
       }
     }
-    projectViewModel.project.value
 
     binding.lifecycleOwner = viewLifecycleOwner
     binding.project = projectViewModel
@@ -71,6 +72,15 @@ class ProjectFragment : Fragment() {
     binding.export.setOnClickListener {
       projectViewModel.export(requireContext(), this)
     }
+
+    binding.projectName.setOnEditorActionListener {
+      _, _, _ ->
+        Log.i("DEANH", "Saving...")
+        CoroutineScope(Dispatchers.Main).launch {
+          projectViewModel.save()
+        }
+        false
+      }
 
     return binding.root
   }

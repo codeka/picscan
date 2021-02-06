@@ -83,10 +83,15 @@ class ProjectViewModel : ViewModel() {
 
         intent.type = "application/pdf"
 
+        var fileName = project.value?.project?.name ?: "untitle"
+        if (!fileName.endsWith(".pdf")) {
+          fileName += ".pdf"
+        }
+
         intent.putExtra(
           Intent.EXTRA_STREAM,
           FileProvider.getUriForFile(context, "com.codeka.picscan.FileProvider", it))
-        intent.putExtra(Intent.EXTRA_SUBJECT, "Share") // TODO: subject?
+        intent.putExtra(Intent.EXTRA_SUBJECT, fileName)
         context.startActivity(intent)
       }
     }

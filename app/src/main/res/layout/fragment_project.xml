@@ -18,7 +18,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
-        android:text="@{project.project.project.name}"/>
+        android:text="@={project.project.project.name}"
+        android:singleLine="true"
+        android:imeOptions="actionDone" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/pages"

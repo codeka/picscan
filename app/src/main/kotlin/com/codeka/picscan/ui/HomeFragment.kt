@@ -106,7 +106,7 @@ class HomeFragment : Fragment() {
       val project = projects.value?.get(position) ?: return
 
       Log.i("DEANH", "binding ${project.name} and ${project.createDate}")
-      if (project.name == "") {
+      if (project.name != "") {
         holder.binding.projectName.text = project.name
       } else {
         holder.binding.projectName.text = "Unknown";
