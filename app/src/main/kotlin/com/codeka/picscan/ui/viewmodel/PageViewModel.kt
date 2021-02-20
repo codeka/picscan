@@ -152,29 +152,40 @@ class PageViewModel : ViewModel() {
       withContext(Dispatchers.Default) {
         Log.i(TAG, "Transforming bitmap")
 
+        val srcBmp = bmp.value ?: return@withContext
         val src = Mat()
-        bitmapToMat(bmp.value!!, src)
+        bitmapToMat(srcBmp, src)
 
         // Figure out the final width/height of the transformed image. We'll make it the minimum
         // of the width of the quadrilateral we've defined by corners.
-        val pageCorers = corners.value!!
+        val pageCorners = corners.value
+        if (pageCorners == null) {
+          // We haven't done a transform yet, just return the original bitmap.
+          withContext(Dispatchers.Main) {
+            transformedBmp.value = srcBmp
+            filteredBmp.value = srcBmp
+            filterType.value = ImageFilterType.None
+          }
+          return@withContext
+        }
+
         val widthTop = sqrt(
-          (pageCorers.topRight.x.toDouble() - pageCorers.topLeft.x).pow(2.0) +
-              (pageCorers.topRight.y.toDouble() - pageCorers.topLeft.y).pow(2.0)
+          (pageCorners.topRight.x.toDouble() - pageCorners.topLeft.x).pow(2.0) +
+              (pageCorners.topRight.y.toDouble() - pageCorners.topLeft.y).pow(2.0)
         )
         val widthBottom = sqrt(
-          (pageCorers.bottomRight.x.toDouble() - pageCorers.bottomLeft.x).pow(2.0) +
-              (pageCorers.bottomRight.y.toDouble() - pageCorers.bottomLeft.y).pow(2.0)
+          (pageCorners.bottomRight.x.toDouble() - pageCorners.bottomLeft.x).pow(2.0) +
+              (pageCorners.bottomRight.y.toDouble() - pageCorners.bottomLeft.y).pow(2.0)
         )
         val width = widthTop.coerceAtMost(widthBottom)
 
         val heightLeft = sqrt(
-          (pageCorers.bottomLeft.x.toDouble() - pageCorers.topLeft.x).pow(2.0) +
-              (pageCorers.bottomLeft.y.toDouble() - pageCorers.topLeft.y).pow(2.0)
+          (pageCorners.bottomLeft.x.toDouble() - pageCorners.topLeft.x).pow(2.0) +
+              (pageCorners.bottomLeft.y.toDouble() - pageCorners.topLeft.y).pow(2.0)
         )
         val heightRight = sqrt(
-          (pageCorers.bottomRight.x.toDouble() - pageCorers.topRight.x).pow(2.0) +
-              (pageCorers.bottomRight.y.toDouble() - pageCorers.topRight.y).pow(2.0)
+          (pageCorners.bottomRight.x.toDouble() - pageCorners.topRight.x).pow(2.0) +
+              (pageCorners.bottomRight.y.toDouble() - pageCorners.topRight.y).pow(2.0)
         )
         val height = heightLeft.coerceAtMost(heightRight)
         Log.i(TAG, "Calculated size: $width,$height")
@@ -184,10 +195,10 @@ class PageViewModel : ViewModel() {
         val srcMat = Mat(4, 1, CvType.CV_32FC2)
         srcMat.put(
           0, 0,
-          pageCorers.topLeft.x.toDouble(), pageCorers.topLeft.y.toDouble(),
-          pageCorers.topRight.x.toDouble(), pageCorers.topRight.y.toDouble(),
-          pageCorers.bottomRight.x.toDouble(), pageCorers.bottomRight.y.toDouble(),
-          pageCorers.bottomLeft.x.toDouble(), pageCorers.bottomLeft.y.toDouble()
+          pageCorners.topLeft.x.toDouble(), pageCorners.topLeft.y.toDouble(),
+          pageCorners.topRight.x.toDouble(), pageCorners.topRight.y.toDouble(),
+          pageCorners.bottomRight.x.toDouble(), pageCorners.bottomRight.y.toDouble(),
+          pageCorners.bottomLeft.x.toDouble(), pageCorners.bottomLeft.y.toDouble()
         )
 
         val dstMat = Mat(4, 1, CvType.CV_32FC2)
