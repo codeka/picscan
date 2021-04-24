@@ -13,7 +13,7 @@
 .externalNativeBuild
 .cxx
 local.properties
-
+/app/release
 
 # This needs to be copied in manually.
 /opencv/
