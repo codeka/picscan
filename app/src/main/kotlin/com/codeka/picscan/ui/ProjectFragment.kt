@@ -51,7 +51,7 @@ class ProjectFragment : Fragment() {
 
     val projectViewModel: ProjectViewModel by navGraphViewModels(R.id.nav_graph)
     val args = this.args
-    if (args?.projectId != null) {
+    if (args?.projectId != null && args.projectId > 0) {
       projectViewModel.load(args.projectId)
     }
     projectViewModel.project.observe(viewLifecycleOwner) {
