@@ -16,4 +16,7 @@ local.properties
 
 
 # This needs to be copied in manually.
-/opencv
+/opencv/
+# But include our README.md file
+!*/opencv/README.md
+
