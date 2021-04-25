@@ -19,4 +19,8 @@ interface ProjectDao {
   @Transaction
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   suspend fun savePage(page: Page): Long
+
+  @Transaction
+  @Delete
+  fun delete(project: Project)
 }

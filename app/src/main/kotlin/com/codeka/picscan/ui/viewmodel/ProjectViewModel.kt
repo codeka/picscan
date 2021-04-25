@@ -67,6 +67,25 @@ class ProjectViewModel : ViewModel() {
     }
   }
 
+  fun delete() {
+    viewModelScope.launch {
+      val pageViewModel = PageViewModel()
+      for (page in project.value!!.pages) {
+        pageViewModel.reset(page)
+        withContext(Dispatchers.IO) {
+          pageViewModel.deleteFiles()
+        }
+      }
+
+      withContext(Dispatchers.IO) {
+        repo.delete(project.value!!.project)
+        withContext(Dispatchers.Main) {
+          project.value = null
+        }
+      }
+    }
+  }
+
   /** Saves the project to the data store. */
   suspend fun save() {
     val projectWithPages = project.value

@@ -2,8 +2,10 @@ package com.codeka.picscan.model
 
 import android.content.Context
 import androidx.lifecycle.LiveData
+import com.codeka.picscan.ui.viewmodel.PageViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.File
 
 class ProjectRepository(private val projectDao: ProjectDao) {
   fun get(id: Long): ProjectWithPages = projectDao.get(id)
@@ -31,6 +33,12 @@ class ProjectRepository(private val projectDao: ProjectDao) {
 
     withContext(Dispatchers.IO) {
       projectDao.savePage(page)
+    }
+  }
+
+  suspend fun delete(project: Project) {
+    withContext(Dispatchers.IO) {
+      projectDao.delete(project)
     }
   }
 

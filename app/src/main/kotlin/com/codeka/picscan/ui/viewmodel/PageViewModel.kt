@@ -86,6 +86,30 @@ class PageViewModel : ViewModel() {
   }
 
   /**
+   * Deletes all the files associated with the page. Only do this if you're also about to delete the
+   * page (or project) itself.
+   */
+  fun deleteFiles() {
+    val page = this.page ?: return
+
+    try {
+      File(page.photoUri).delete()
+    } catch (e: java.lang.Exception) {
+      Log.w(TAG, String.format("Unexpected error deleting photoUri: %s %s", page.photoUri, e))
+    }
+
+    val directory = File(App.filesDir, "images")
+    val filteredImage = File(directory, "%06d.jpg".format(page.id))
+    if (filteredImage.exists()) {
+      try {
+        filteredImage.delete()
+      } catch(e: java.lang.Exception) {
+        Log.w(TAG, "Unexpected error deleting filtered image: %s", e)
+      }
+    }
+  }
+
+  /**
    * Attempt to find the edges of the page for the current image.
    *
    * <p>This function calculates initial values for [corners] by doing some operations on the
@@ -140,6 +164,19 @@ class PageViewModel : ViewModel() {
           }
 
           largestContour.release()
+        } else {
+          val c = PageCorners()
+          c.topLeft.x = 0.0f
+          c.topLeft.y = 0.0f
+          c.topRight.x = bmp.value!!.width.toFloat()
+          c.topRight.y = 0.0f
+          c.bottomRight.x = bmp.value!!.width.toFloat()
+          c.bottomRight.y = bmp.value!!.height.toFloat()
+          c.bottomLeft.x = 0.0f
+          c.bottomLeft.y = bmp.value!!.height.toFloat()
+          withContext(Dispatchers.Main) {
+            corners.value = c
+          }
         }
         edges.release()
         origMat.release()

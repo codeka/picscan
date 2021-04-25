@@ -1,11 +1,10 @@
 package com.codeka.picscan.ui
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
@@ -19,7 +18,9 @@ import com.codeka.picscan.databinding.FragmentProjectBinding
 import com.codeka.picscan.databinding.ProjectPageRowBinding
 import com.codeka.picscan.export.PdfExporter
 import com.codeka.picscan.model.ProjectWithPages
+import com.codeka.picscan.ui.viewmodel.PageViewModel
 import com.codeka.picscan.ui.viewmodel.ProjectViewModel
+import com.codeka.picscan.util.observeOnce
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,6 +38,7 @@ class ProjectFragment : Fragment() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    setHasOptionsMenu(true)
 
     val bundleArgs = arguments
     if (bundleArgs != null) {
@@ -83,6 +85,39 @@ class ProjectFragment : Fragment() {
       }
 
     return binding.root
+  }
+
+  override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    inflater.inflate(R.menu.project_menu, menu)
+  }
+
+  override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    return when (item.itemId) {
+      R.id.action_delete -> {
+        maybeDeleteProject()
+        true
+      }
+      else -> super.onOptionsItemSelected(item)
+    }
+  }
+
+  /**
+   * Asks if you want to delete the current project, and deletes it if you do.
+   */
+  private fun maybeDeleteProject() {
+    AlertDialog.Builder(activity)
+      .setMessage(R.string.delete_confirm_msg)
+      .setCancelable(true)
+      .setPositiveButton(R.string.delete) { _, _ ->
+        val projectViewModel: ProjectViewModel by navGraphViewModels(R.id.nav_graph)
+        projectViewModel.delete()
+
+        findNavController().navigateUp()
+      }
+      .setNegativeButton(R.string.cancel) { dialog, _ ->
+        dialog.dismiss()
+      }
+      .show()
   }
 
   class PageViewAdapter(
