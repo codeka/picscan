@@ -9,7 +9,7 @@ interface ProjectDao {
   @Query("SELECT * FROM projects WHERE id=:id")
   fun get(id: Long): ProjectWithPages
 
-  @Query("SELECT * FROM projects WHERE draft=0")
+  @Query("SELECT * FROM projects WHERE draft=0 ORDER BY createDate DESC")
   fun getAll(): LiveData<List<Project>>
 
   @Transaction
