@@ -8,10 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.codeka.picscan.App
-import com.codeka.picscan.model.ImageFilterType
-import com.codeka.picscan.model.Page
-import com.codeka.picscan.model.PageCorners
-import com.codeka.picscan.model.ProjectRepository
+import com.codeka.picscan.model.*
 import com.squareup.picasso.Picasso
 import com.squareup.picasso.Target
 import kotlinx.coroutines.Dispatchers
@@ -71,9 +68,7 @@ class PageViewModel : ViewModel() {
     }
 
     // First, save the final bitmap to disk.
-    val outputDirectory = File(App.filesDir, "images")
-    outputDirectory.mkdirs()
-    val outputFile = File(outputDirectory, "%06d.jpg".format(page.id))
+    val outputFile = page.imageFile()
     Log.i(TAG, "Saving image: ${outputFile.absolutePath}")
     withContext(Dispatchers.IO) {
       FileOutputStream(outputFile).use {
@@ -98,11 +93,10 @@ class PageViewModel : ViewModel() {
       Log.w(TAG, String.format("Unexpected error deleting photoUri: %s %s", page.photoUri, e))
     }
 
-    val directory = File(App.filesDir, "images")
-    val filteredImage = File(directory, "%06d.jpg".format(page.id))
-    if (filteredImage.exists()) {
+    val imageFile = page.imageFile()
+    if (imageFile.exists()) {
       try {
-        filteredImage.delete()
+        imageFile.delete()
       } catch(e: java.lang.Exception) {
         Log.w(TAG, "Unexpected error deleting filtered image: %s", e)
       }

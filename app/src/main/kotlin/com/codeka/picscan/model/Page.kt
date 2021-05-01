@@ -3,6 +3,8 @@ package com.codeka.picscan.model
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.codeka.picscan.App
+import java.io.File
 
 /**
  * Represents one page of the document in a [Project].
@@ -24,3 +26,9 @@ data class Page (
   /** The [ImageFilterType] that we used to filter the image. */
   var filter: ImageFilterType
 )
+
+fun Page.imageFile(): File {
+  val outputDirectory = File(App.filesDir, "images")
+  outputDirectory.mkdirs()
+  return File(outputDirectory, "%06d.jpg".format(id))
+}

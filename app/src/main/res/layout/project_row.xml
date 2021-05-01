@@ -7,17 +7,18 @@
     android:layout_height="wrap_content">
 
   <ImageView
-    android:id="@+id/generic_page"
-      android:layout_width="64dp"
-      android:layout_height="83dp"
+      android:id="@+id/project_preview"
+      android:layout_width="84dp"
+      android:layout_height="84dp"
       android:src="@drawable/ic_generic_page"
-      android:scaleType="center" />
+      android:scaleType="center"
+      android:background="@android:color/transparent"/>
 
   <TextView
       android:id="@+id/project_name"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_toEndOf="@id/generic_page"
+      android:layout_toEndOf="@id/project_preview"
       android:layout_marginStart="8dp"
       android:layout_marginTop="8dp"
       tools:text="Project name" />
@@ -26,7 +27,7 @@
       android:id="@+id/project_date"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_toEndOf="@id/generic_page"
+      android:layout_toEndOf="@id/project_preview"
       android:layout_below="@id/project_name"
       android:layout_marginStart="8dp"
       tools:text="1/26/2020" />

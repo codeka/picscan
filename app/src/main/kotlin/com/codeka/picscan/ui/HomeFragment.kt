@@ -4,7 +4,9 @@ import android.Manifest
 import android.content.DialogInterface
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.DisplayMetrics
 import android.util.Log
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,9 +25,9 @@ import com.codeka.picscan.App
 import com.codeka.picscan.R
 import com.codeka.picscan.databinding.FragmentHomeBinding
 import com.codeka.picscan.databinding.ProjectRowBinding
-import com.codeka.picscan.model.Project
-import com.codeka.picscan.model.ProjectRepository
+import com.codeka.picscan.model.*
 import com.codeka.picscan.ui.viewmodel.ProjectViewModel
+import com.squareup.picasso.Picasso
 import java.util.*
 
 
@@ -93,19 +95,18 @@ class HomeFragment : Fragment() {
   }
 
   private class PageViewAdapter(
-    private val projects: LiveData<List<Project>>, lifecycleOwner: LifecycleOwner,
+    private val projects: LiveData<List<Project>>, private val lifecycleOwner: LifecycleOwner,
     private val clickListener: (Project) -> Unit
   ) : RecyclerView.Adapter<PageViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PageViewHolder {
       val binding = ProjectRowBinding.inflate(LayoutInflater.from(parent.context))
-      return PageViewHolder(binding)
+      return PageViewHolder(binding, parent.resources.displayMetrics)
     }
 
     override fun onBindViewHolder(holder: PageViewHolder, position: Int) {
       val project = projects.value?.get(position) ?: return
 
-      Log.i("DEANH", "binding ${project.name} and ${project.createDate}")
       if (project.name != "") {
         holder.binding.projectName.text = project.name
       } else {
@@ -113,11 +114,23 @@ class HomeFragment : Fragment() {
       }
       holder.binding.projectDate.text =
         Date(project.createDate * 1000L).toString()
+      if (project.needsPreviewRegenerate()) {
+        // We manually calculate the size because the width of the view may still be zero at
+        // this point. TODO: figure out how to make it so we don't have to keep the values in
+        // in-sync manually.
+        val sizeInPx =
+          TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 84f, holder.displayMetrics)
+
+        val vm = ProjectViewModel()
+        vm.load(project.id)
+        vm.generatePreview(lifecycleOwner, sizeInPx.toInt())
+      } else {
+        Picasso.get().load(project.previewFile()).into(holder.binding.projectPreview)
+      }
       holder.binding.root.setOnClickListener { clickListener(project) }
     }
 
     override fun getItemCount(): Int {
-      Log.i("DEANH", "getItemCount() = ${projects.value?.size ?: -1}")
       return projects.value?.size ?: 0
     }
 
@@ -128,7 +141,7 @@ class HomeFragment : Fragment() {
     }
   }
 
-  class PageViewHolder(val binding: ProjectRowBinding)
+  class PageViewHolder(val binding: ProjectRowBinding, val displayMetrics: DisplayMetrics)
     : RecyclerView.ViewHolder(binding.root) {
   }
 

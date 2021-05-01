@@ -2,6 +2,7 @@ package com.codeka.picscan.ui.viewmodel
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
 import androidx.core.content.FileProvider
@@ -9,9 +10,12 @@ import androidx.lifecycle.*
 import com.codeka.picscan.App
 import com.codeka.picscan.export.PdfExporter
 import com.codeka.picscan.model.*
+import com.codeka.picscan.util.observeOnce
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.chrono.Chronology
@@ -44,7 +48,8 @@ class ProjectViewModel : ViewModel() {
         id = 0,
         draft = true,
         createDate = now.toEpochSecond(ZoneOffset.UTC),
-        name = String.format(locale, "scan %s", format.format(now)))
+        name = String.format(locale, "scan %s", format.format(now)),
+        previewUpToDate = false)
 
       val projectWithPages = ProjectWithPages(proj, pages = arrayListOf())
       repo.save(projectWithPages)
@@ -116,6 +121,30 @@ class ProjectViewModel : ViewModel() {
     }
   }
 
+  fun generatePreview(lifecycleOwner: LifecycleOwner, size: Int) {
+    project.observeOnce(lifecycleOwner) {
+      viewModelScope.launch {
+        withContext(Dispatchers.Default) {
+          val preview = PreviewGenerator().generatePreview(it, size)
+
+          val outputFile = it.project.previewFile()
+          Log.i(TAG, "Saving preview: ${outputFile.absolutePath}")
+          withContext(Dispatchers.IO) {
+            FileOutputStream(outputFile).use {
+              preview.compress(Bitmap.CompressFormat.PNG, 90, it)
+            }
+          }
+
+          withContext(Dispatchers.Main) {
+            it.project.previewUpToDate = true
+            project.value = it
+            save()
+          }
+        }
+      }
+    }
+  }
+
   fun findPage(pageId: Long): Page? {
     for (p in project.value!!.pages) {
       if (p.id == pageId) {
@@ -143,6 +172,13 @@ class ProjectViewModel : ViewModel() {
     val pages = ArrayList(proj.pages)
     pages.add(page)
     proj.pages = pages
+    
+    // After we add a page, the preview is obviously no longer up to date.
+    proj.project.previewUpToDate = false
     project.value = proj
+  }
+
+  companion object {
+    private const val TAG = "ProjectViewModel"
   }
 }
