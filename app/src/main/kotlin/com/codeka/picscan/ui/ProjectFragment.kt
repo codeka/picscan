@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import android.view.inputmethod.EditorInfo
+import android.widget.AdapterView
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.findNavController
@@ -17,6 +18,8 @@ import com.codeka.picscan.R
 import com.codeka.picscan.databinding.FragmentProjectBinding
 import com.codeka.picscan.databinding.ProjectPageRowBinding
 import com.codeka.picscan.export.PdfExporter
+import com.codeka.picscan.model.Page
+import com.codeka.picscan.model.Project
 import com.codeka.picscan.model.ProjectWithPages
 import com.codeka.picscan.ui.viewmodel.PageViewModel
 import com.codeka.picscan.ui.viewmodel.ProjectViewModel
@@ -66,7 +69,12 @@ class ProjectFragment : Fragment() {
     binding.project = projectViewModel
 
     binding.pages.layoutManager = LinearLayoutManager(requireContext())
-    binding.pages.adapter = PageViewAdapter(projectViewModel.project, viewLifecycleOwner)
+    binding.pages.adapter = PageViewAdapter(projectViewModel.project, {
+      val pageViewModel: PageViewModel by navGraphViewModels(R.id.nav_graph)
+      pageViewModel.reset(it)
+
+      findNavController().navigate(ProjectFragmentDirections.toColorFilterFragment())
+    }, viewLifecycleOwner)
 
     binding.newPage.setOnClickListener {
       findNavController().navigate(ProjectFragmentDirections.toCameraFragment())
@@ -77,7 +85,6 @@ class ProjectFragment : Fragment() {
 
     binding.projectName.setOnEditorActionListener {
       _, _, _ ->
-        Log.i("DEANH", "Saving...")
         CoroutineScope(Dispatchers.Main).launch {
           projectViewModel.save()
         }
@@ -121,7 +128,7 @@ class ProjectFragment : Fragment() {
   }
 
   class PageViewAdapter(
-    private val project: MutableLiveData<ProjectWithPages>, lifecycleOwner: LifecycleOwner)
+    private val project: MutableLiveData<ProjectWithPages>, private val clickListener: (Page) -> Unit, lifecycleOwner: LifecycleOwner)
     : RecyclerView.Adapter<PageViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PageViewHolder {
@@ -133,6 +140,10 @@ class ProjectFragment : Fragment() {
       val dir = File(App.filesDir, "images")
       val file = File(dir, "%06d.jpg".format(project.value?.pages?.get(position)?.id ?: 0))
       Picasso.get().load(file).into(holder.binding.testView)
+      holder.binding.root.setOnClickListener {
+        val page = project.value?.pages?.get(position) ?: return@setOnClickListener
+        clickListener(page)
+      }
     }
 
     override fun getItemCount(): Int {

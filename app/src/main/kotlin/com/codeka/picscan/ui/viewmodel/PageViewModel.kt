@@ -53,11 +53,14 @@ class PageViewModel : ViewModel() {
   /** Reset this [PageViewModel] to refer to the given page. */
   fun reset(page: Page) {
     this.page = page
+    corners.value = page.corners
     bmp.value = null
-    corners.value = null
     transformedBmp.value = null
-
     Picasso.get().load(page.photoUri).into(target)
+
+    filterType.value = page.filter
+    filteredBmp.value = null
+
   }
 
   /** Saves the current [PageViewModel] back to the database. */
@@ -390,7 +393,11 @@ class PageViewModel : ViewModel() {
   private val target = object : Target {
     override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
       bmp.value = bitmap
-      findEdges()
+      if (corners.value == null) {
+        findEdges()
+      } else {
+        transformCorners()
+      }
     }
 
     override fun onBitmapFailed(e: Exception?, errorDrawable: Drawable?) {

@@ -21,7 +21,7 @@
       app:layout_constraintTop_toTopOf="parent"
       app:layout_constraintBottom_toTopOf="@+id/bottom_buttons"
       app:bitmap="@{page.filteredBmp}" />
-
+ /* fps */
     <View
       android:id="@+id/filter_selector"
       android:layout_width="match_parent"
