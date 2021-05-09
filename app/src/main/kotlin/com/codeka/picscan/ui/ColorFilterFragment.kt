@@ -14,13 +14,11 @@ import com.codeka.picscan.ui.viewmodel.PageViewModel
 import com.codeka.picscan.ui.viewmodel.ProjectViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 /**
- * A simple [Fragment] subclass.
- * Use the [ColorFilterFragment.newInstance] factory method to
- * create an instance of this fragment.
+ * This fragment lets you modify the color filtering of the image. We also let you pan & zoom the
+ * image to get a better look.
  */
 class ColorFilterFragment : Fragment() {
   private lateinit var binding: FragmentColorFilterBinding
