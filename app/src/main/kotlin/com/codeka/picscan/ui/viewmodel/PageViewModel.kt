@@ -393,9 +393,11 @@ class PageViewModel : ViewModel() {
   private val target = object : Target {
     override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
       bmp.value = bitmap
-      if (corners.value == null) {
+      if (page?.id == 0L) {
+        // If it's a brand new page, find the corners.
         findEdges()
       } else {
+        // Otherwise, an existing page we expect to already have the corners.
         transformCorners()
       }
     }
